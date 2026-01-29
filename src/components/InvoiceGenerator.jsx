@@ -15,6 +15,8 @@ import { pdf } from '@react-pdf/renderer';
 import { motion } from 'framer-motion';
 import { useRUCLookup } from '@/hooks/useRUCLookup';
 import { useCaja } from '@/contexts/CajaContext';
+import { useSupabaseSync } from '@/contexts/SupabaseSyncContext';
+import { CloudDownload } from 'lucide-react';
 
 // Helper to get local date in YYYY-MM-DD format to avoid UTC shifts
 const getLocalTodayDate = () => {
@@ -47,6 +49,10 @@ function InvoiceGenerator() {
   const { toast } = useToast();
   const { saveRUC } = useRUCLookup();
   const { currentSession, addTransaction } = useCaja();
+  const { pullAll, isSyncing } = useSupabaseSync();
+
+  // Check if system is empty (to suggest sync)
+  const isSystemEmpty = !localStorage.getItem('products') || JSON.parse(localStorage.getItem('products')).length === 0;
 
   // Load data from localStorage
   const loadFromStorage = (key, defaultValue) => {
@@ -363,6 +369,32 @@ function InvoiceGenerator() {
 
       <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1400px] mx-auto">
+          {/* Cloud Sync Alert (Only if empty) */}
+          {isSystemEmpty && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6 p-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 border border-blue-400/30"
+            >
+              <div className="flex items-center gap-4 text-center md:text-left">
+                <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                  <CloudDownload className="w-8 h-8 text-blue-100" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">¡Sistema Conectado!</h3>
+                  <p className="text-blue-100 text-sm">Detectamos que no tienes productos. ¿Quieres descargar tus datos desde la Nube (Supabase)?</p>
+                </div>
+              </div>
+              <button
+                onClick={pullAll}
+                disabled={isSyncing}
+                className="px-8 py-3 bg-white text-blue-700 rounded-full font-black uppercase tracking-wider shadow-lg hover:bg-blue-50 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isSyncing ? 'Sincronizando...' : 'Descargar Datos Ahora'}
+              </button>
+            </motion.div>
+          )}
+
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}

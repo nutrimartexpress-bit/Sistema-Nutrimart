@@ -561,7 +561,7 @@ import { supabase } from '@/lib/customSupabaseClient'; // Needed for direct rest
 
 const SystemMaintenance = () => {
     const { toast } = useToast();
-    const { syncAll, isSyncing } = useSupabaseSync();
+    const { syncAll, pullAll, isSyncing } = useSupabaseSync();
 
     const handleSyncSalesWithCash = () => {
         try {
@@ -1069,7 +1069,7 @@ const SystemMaintenance = () => {
                         Paso 4: Si no ves tus datos, descárgalos de la Nube.
                     </p>
                     <button
-                        onClick={handleDownloadFromCloud}
+                        onClick={pullAll}
                         className="flex items-center gap-2 px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-lg shadow-green-200 transition-all active:scale-95 w-full justify-center md:w-auto"
                     >
                         <CloudUpload className="w-5 h-5 rotate-180" />

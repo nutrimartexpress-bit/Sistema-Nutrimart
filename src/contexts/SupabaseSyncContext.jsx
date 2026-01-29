@@ -232,6 +232,92 @@ export function SupabaseSyncProvider({ children }) {
         }
     };
 
+    const pullAll = async () => {
+        if (isSyncing) return;
+        setIsSyncing(true);
+        toast({ title: "Descargando...", description: "Recuperando datos desde Supabase..." });
+
+        try {
+            // 1. Fetch Products
+            const { data: products } = await supabase.from('productos').select('*');
+            if (products) {
+                const mapped = products.map(p => ({
+                    code: p.codigo,
+                    description: p.descripcion,
+                    retailPrice: parseFloat(p.precio_venta),
+                    stock: p.stock,
+                    um: p.unidad_medida,
+                    cost: p.costo
+                }));
+                localStorage.setItem('products', JSON.stringify(mapped));
+            }
+
+            // 2. Fetch Sales & Details
+            const { data: sales } = await supabase.from('ventas').select('*');
+            const { data: details } = await supabase.from('detalles_ventas').select('*');
+            if (sales) {
+                const mapped = sales.map(s => ({
+                    id: s.id,
+                    date: s.fecha,
+                    time: s.hora,
+                    clientName: s.cliente_nombre,
+                    ruc: s.cliente_ruc,
+                    type: s.tipo,
+                    total: parseFloat(s.total),
+                    paymentMethod: s.metodo_pago,
+                    status: s.status,
+                    items: details?.filter(d => d.venta_id === s.id).map(d => ({
+                        code: d.producto_codigo,
+                        description: d.descripcion,
+                        quantity: parseFloat(d.cantidad),
+                        unitPrice: parseFloat(d.precio_unitario)
+                    })) || []
+                }));
+                localStorage.setItem('salesHistory', JSON.stringify(mapped));
+            }
+
+            // 3. Fetch Sessions
+            const { data: sessions } = await supabase.from('caja_sesiones').select('*');
+            if (sessions) {
+                const mapped = sessions.map(s => ({
+                    id: s.id,
+                    openingDate: s.opening_date,
+                    openingTime: s.opening_time,
+                    openingAmount: s.opening_amount,
+                    responsible: s.responsible,
+                    notes: s.notes,
+                    status: s.status
+                }));
+                localStorage.setItem('cashOpeningHistory', JSON.stringify(mapped));
+            }
+
+            // 4. Fetch Movements
+            const { data: moves } = await supabase.from('movimientos_caja').select('*');
+            if (moves) {
+                const mapped = moves.map(m => ({
+                    id: m.id,
+                    date: m.fecha ? m.fecha.split('T')[0] : '',
+                    time: m.fecha ? m.fecha.split('T')[1]?.slice(0, 5) : '',
+                    description: m.descripcion,
+                    amount: parseFloat(m.monto),
+                    type: m.tipo,
+                    paymentMethod: m.metodo_pago
+                }));
+                localStorage.setItem('cashTransactions', JSON.stringify(mapped));
+            }
+
+            toast({ title: "Sincronización Exitosa", description: "Tus datos locales han sido actualizados.", variant: "success" });
+            setLastSyncTime(new Date());
+            setTimeout(() => window.location.reload(), 1000);
+
+        } catch (error) {
+            console.error("Pull Error:", error);
+            toast({ title: "Error", description: "No se pudieron descargar los datos.", variant: "destructive" });
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const syncAll = async () => {
         if (isSyncing) return;
         setIsSyncing(true);
@@ -283,7 +369,7 @@ export function SupabaseSyncProvider({ children }) {
     }, []);
 
     return (
-        <SupabaseSyncContext.Provider value={{ syncAll, isSyncing, lastSyncTime }}>
+        <SupabaseSyncContext.Provider value={{ syncAll, pullAll, isSyncing, lastSyncTime }}>
             {children}
         </SupabaseSyncContext.Provider>
     );
