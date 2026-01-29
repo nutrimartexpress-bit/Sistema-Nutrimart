@@ -52,7 +52,18 @@ function InvoiceGenerator() {
   const { pullAll, isSyncing } = useSupabaseSync();
 
   // Check if system is empty (to suggest sync)
-  const isSystemEmpty = !localStorage.getItem('products') || JSON.parse(localStorage.getItem('products')).length === 0;
+  const isSystemEmpty = (() => {
+    try {
+      const stored = localStorage.getItem('products');
+      if (!stored) return true;
+      const parsed = JSON.parse(stored);
+      return !Array.isArray(parsed) || parsed.length === 0;
+    } catch {
+      return true;
+    }
+  })();
+
+  console.log("System empty check:", isSystemEmpty);
 
   // Load data from localStorage
   const loadFromStorage = (key, defaultValue) => {

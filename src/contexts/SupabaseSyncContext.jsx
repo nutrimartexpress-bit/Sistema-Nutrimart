@@ -234,8 +234,20 @@ export function SupabaseSyncProvider({ children }) {
 
     const pullAll = async () => {
         if (isSyncing) return;
+
+        // Validation of Environment Variables
+        if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+            console.error("Supabase credentials missing in Environment Variables!");
+            toast({
+                title: "Error de Configuración",
+                description: "Las credenciales de Supabase no están configuradas en Vercel.",
+                variant: "destructive"
+            });
+            return;
+        }
+
         setIsSyncing(true);
-        toast({ title: "Descargando...", description: "Recuperando datos desde Supabase..." });
+        toast({ title: "Conectando...", description: "Verificando conexión con Supabase..." });
 
         try {
             // 1. Fetch Products
