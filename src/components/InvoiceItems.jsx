@@ -44,7 +44,7 @@ function InvoiceItems({ items, setItems, errors, defaultUnitPrice }) {
       const savedProducts = JSON.parse(localStorage.getItem('products') || '[]');
       const found = savedProducts.find(p =>
         (field === 'code' && p.code === value && value !== '') ||
-        (field === 'description' && p.name.toLowerCase() === value.toLowerCase())
+        (field === 'description' && p.description.toLowerCase() === value.toLowerCase())
       );
 
       if (found) {
@@ -52,9 +52,9 @@ function InvoiceItems({ items, setItems, errors, defaultUnitPrice }) {
           item.id === id ? {
             ...item,
             code: found.code,
-            description: found.name,
-            unitPrice: found.price,
-            um: found.um
+            description: found.description,
+            unitPrice: found.retailPrice,
+            um: found.unit || found.um
           } : item
         );
         toast({
