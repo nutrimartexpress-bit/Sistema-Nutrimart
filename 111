@@ -1,0 +1,19 @@
+# -----------------------------
+# Script para iniciar Horizons
+# -----------------------------
+
+$projectPath = "C:\Users\USER\Desktop\horizons-export-8133f64e-cdf8-4769-82d9-80717b17affc (2)"
+Set-Location $projectPath
+
+if (!(Test-Path "$projectPath\node_modules")) {
+    Write-Output "Instalando dependencias..."
+    npm install
+} else {
+    Write-Output "Dependencias ya instaladas."
+}
+
+Write-Output "Iniciando Horizons..."
+Start-Process powershell -ArgumentList "npm start"
+
+Start-Sleep -Seconds 5
+Start-Process "http://localhost:3000"

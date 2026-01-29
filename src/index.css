@@ -1,0 +1,18 @@
+/*
+  TEMPLATE STYLES: These styles are used as a base template.
+  AI is allowed to modify these styles as needed.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    @apply bg-gray-50 text-gray-900;
+    font-family: 'DM Sans', sans-serif;
+}
+
+input, select, textarea {
+    @apply text-gray-900;
+}
+
+/* Mantener el fondo oscuro solo si es necesario, pero por ahora el usuario usa fondos claros en los componentes */
